@@ -1,51 +1,58 @@
 """
-Generates embeddings for the knowledge base CSV using a local sentence-transformers
-model (no API key / cost needed). Saves results to kb_embeddings.json.
+Generates semantic embeddings for the knowledge base CSV using HuggingFace's
+free Inference API (no local model download, no torch, sandbox-safe).
+
+Requires a free HF token: https://huggingface.co/settings/tokens
+Set it as an environment variable: HF_TOKEN
 
 Run: python3 generate_embeddings.py
 """
 
-import os
 import csv
 import json
-import sys
+import os
+import time
 
-try:
-    from sentence_transformers import SentenceTransformer
-except Exception:
-    print("Missing dependency: sentence_transformers. Install with: pip install sentence-transformers")
-    raise
+import requests
 
-# Resolve paths relative to the repository root (one level up from `source/`)
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-INPUT_CSV = os.path.join(BASE_DIR, "data", "kb.csv")
-OUTPUT_JSON = os.path.join(BASE_DIR, "kb_embeddings.json")
-MODEL_NAME = "all-mpnet-base-v2"  # stronger semantic quality than MiniLM, still free/local
+INPUT_CSV = "skills/kb.csv"
+OUTPUT_JSON = "skills/kb_embeddings.json"
+MODEL_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2/pipeline/feature-extraction"
 
-if not os.path.exists(INPUT_CSV):
-    print(f"Input CSV not found: {INPUT_CSV}")
-    sys.exit(2)
+HF_TOKEN = os.environ.get("HF_TOKEN")
+if not HF_TOKEN:
+    raise RuntimeError("Set the HF_TOKEN environment variable (free token from huggingface.co/settings/tokens)")
 
-print(f"Loading model {MODEL_NAME}...")
-model = SentenceTransformer(MODEL_NAME)
+headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+
+
+def get_embedding(text):
+    for attempt in range(3):
+        response = requests.post(MODEL_URL, headers=headers, json={"inputs": text})
+        if response.status_code == 200:
+            return response.json()
+        # model may be "cold starting" on HF's servers, wait and retry
+        time.sleep(5)
+    raise RuntimeError(f"Failed to get embedding after 3 attempts: {response.text}")
+
 
 rows = []
 with open(INPUT_CSV, newline="", encoding="utf-8") as f:
     reader = csv.DictReader(f)
     rows = list(reader)
 
-print(f"Embedding {len(rows)} KB entries...")
-texts = [f"{r.get('title','')}: {r.get('content','')}" for r in rows]
-embeddings = model.encode(texts, show_progress_bar=True).tolist()
-
+print(f"Embedding {len(rows)} KB entries via HuggingFace Inference API...")
 output = []
-for row, embedding in zip(rows, embeddings):
+for row in rows:
+    text = f"{row['title']}: {row['content']}"
+    embedding = get_embedding(text)
     output.append({
-        "id": row.get("id"),
-        "title": row.get("title"),
-        "content": row.get("content"),
+        "id": row["id"],
+        "title": row["title"],
+        "content": row["content"],
         "embedding": embedding,
     })
+    print(f"  embedded entry {row['id']}: {row['title']}")
 
 with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
     json.dump(output, f)
