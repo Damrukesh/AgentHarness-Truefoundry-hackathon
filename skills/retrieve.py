@@ -1,9 +1,6 @@
 """
 Retrieves the top-k most relevant KB entries for a given question, using
-cosine similarity against embeddings from HuggingFace's Inference API.
-
-Requires a free HF token: https://huggingface.co/settings/tokens
-Set it as an environment variable: HF_TOKEN
+fastembed (ONNX-based local embeddings) + cosine similarity.
 
 Usage (CLI, for testing):
     python3 retrieve.py "why do retries duplicate my notifications?"
@@ -14,29 +11,12 @@ Usage (as a tool call, e.g. from TrueForge):
 
 import argparse
 import json
-import os
-import time
 
 import numpy as np
-import requests
+from fastembed import TextEmbedding
 
 EMBEDDINGS_JSON = "skills/kb_embeddings.json"
-MODEL_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-mpnet-base-v2/pipeline/feature-extraction"
-
-HF_TOKEN = os.environ.get("HF_TOKEN")
-if not HF_TOKEN:
-    raise RuntimeError("Set the HF_TOKEN environment variable (free token from huggingface.co/settings/tokens)")
-
-headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-
-def get_embedding(text):
-    for attempt in range(3):
-        response = requests.post(MODEL_URL, headers=headers, json={"inputs": text})
-        if response.status_code == 200:
-            return response.json()
-        time.sleep(5)
-    raise RuntimeError(f"Failed to get embedding after 3 attempts: {response.text}")
+MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
 
 def cosine_similarity(a, b):
@@ -52,7 +32,8 @@ args = parser.parse_args()
 with open(EMBEDDINGS_JSON, encoding="utf-8") as f:
     kb = json.load(f)
 
-question_embedding = get_embedding(args.question)
+model = TextEmbedding(model_name=MODEL_NAME)
+question_embedding = list(model.embed([args.question]))[0].tolist()
 
 scored = []
 for entry in kb:
