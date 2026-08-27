@@ -1,7 +1,6 @@
 ---
 name: kb-retrieval
-
-description: Use this skill whenever the user asks a question about DevFlow (the CI/CD platform) that might be answered by the internal knowledge base — e.g. questions about retries, timeouts, secrets, caching, webhooks, promotions, notifications, matrix builds, or rollback behavior. Also use it before drafting a GitHub issue about a DevFlow bug or question, so the issue is grounded in the actual documented behavior instead of a guess.
+description: Use this skill whenever the user asks a question about DevFlow (the CI/CD platform) that might be answered by the internal knowledge base — e.g. questions about retries, timeouts, secrets, caching, webhooks, promotions, notifications, matrix builds, or rollback behavior. Also use it before drafting a GitHub issue about a DevFlow bug or question, so the issue is grounded in the actual documented behavior instead of a guess. Also use it when the user asks to review a pull request, so the review can be checked against documented DevFlow behavior.
 ---
 
 # KB Retrieval Skill
@@ -62,9 +61,7 @@ its link/number instead of creating a new one — do not create a duplicate. Onl
 proceed to drafting a new issue if no clear duplicate exists.
 
 ## Turning an answer into a GitHub issue
-When creating the issue, add the label `from-kb-agent` (create the label first via
-the GitHub MCP tool if it doesn't already exist in the repo) so agent-created issues
-are visually distinguishable from human-filed ones.
+
 If the user wants this turned into a GitHub issue (e.g. "file this as a bug" or
 "can you raise an issue for this"), draft the issue title and body using the
 retrieved KB content as grounding, then use the GitHub MCP tool to create it.
@@ -72,7 +69,17 @@ retrieved KB content as grounding, then use the GitHub MCP tool to create it.
 creating it** — never create the issue directly without confirmation, since this
 is an irreversible action visible to others.
 
-The user may ask for both the answer AND the issue in a single message (e.g. "why do my retries duplicate notifications — can you file this as an issue in owner/repo?"). When this happens, do both steps in the same turn: retrieve from the KB first, use that content to draft the issue, then pause and show the draft for approval before creating it. Do not ask the user to repeat their question in a second message — a single combined request should still get retrieval, drafting, and the approval pause, all before anything is created.
+When creating the issue, add the label `from-kb-agent` (create the label first via
+the GitHub MCP tool if it doesn't already exist in the repo) so agent-created issues
+are visually distinguishable from human-filed ones.
+
+The user may ask for both the answer AND the issue in a single message (e.g. "why
+do my retries duplicate notifications — can you file this as an issue in
+owner/repo?"). When this happens, do both steps in the same turn: retrieve from the
+KB first, use that content to draft the issue, then pause and show the draft for
+approval before creating it. Do not ask the user to repeat their question in a
+second message — a single combined request should still get retrieval, drafting,
+and the approval pause, all before anything is created.
 
 ## Reviewing a pull request against the KB
 
