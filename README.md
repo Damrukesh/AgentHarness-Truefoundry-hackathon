@@ -87,8 +87,7 @@ skills/
    npx @truefoundry/trueforge
    ```
 
-2. **Connect a model** in TrueForge's Initial Setup . Any provider works (OpenRouter,      
-   Anthropic, OpenAI, or a local Ollama endpoint). Use a model with solid tool calling ability.
+2. **Connect a model** in TrueForge's Initial Setup . Any provider works (OpenRouter, Anthropic, OpenAI, or a local Ollama endpoint). Use a model with solid tool calling ability.
 3. **Connect the GitHub MCP server** with a personal access token scoped to a
    test repo you're comfortable with the agent writing to. You'll need:
    - `Issues: Read and write`
@@ -133,6 +132,12 @@ A few real engineering challenges hit me along the way which I would love to sha
   purposes, not a production KB.
 - Retrieval quality depends on the KB actually covering the topic
 - The agent is instructed to say so honestly when it doesn't, rather than guess.
+
+## Qodo Code Review Evidence
+
+[PR #2](https://github.com/Damrukesh/AgentHarness-Truefoundry-hackathon/pull/2) —
+added unit tests for the retrieval similarity/ranking logic (`tests/test_retrieve.py`).
+Qodo reviewed the change and found no bugs, rule violations, or requirement gaps.
 
 ## License
 
