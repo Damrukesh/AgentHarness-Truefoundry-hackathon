@@ -2,7 +2,7 @@
 
 Built for the [TrueForge Agent Harness Hackathon](https://www.wemakedevs.org/hackathons/trueforge) on [TrueForge](https://github.com/truefoundry/trueforge).
 
-**Demo video:** _[link coming soon]_
+**Demo video:**  https://youtu.be/fNpOnPshJ_w?si=i7DJCcNSMXSSKrNj
 
 ## The problem
 
